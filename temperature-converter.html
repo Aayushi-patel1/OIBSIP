@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Temperature Converter</title>
+  <style>
+    :root{
+      --bg0:#070A12;
+      --bg1:#0B1020;
+
+      --card:rgba(255,255,255,.06);
+      --card2:rgba(255,255,255,.09);
+      --stroke:rgba(255,255,255,.12);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.70);
+      --muted2:rgba(255,255,255,.56);
+
+      --a:#7C5CFF;   /* violet */
+      --b:#29D3FF;   /* cyan */
+      --c:#35F7A5;   /* mint */
+      --d:#FF4FD8;   /* pink */
+
+      --shadow: 0 18px 70px rgba(0,0,0,.45);
+      --shadow2: 0 10px 38px rgba(0,0,0,.36);
+
+      --radius-xl: 26px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-sm: 12px;
+
+      --focus: rgba(41,211,255,.6);
+      --container: 980px;
+      --pad: 20px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 700px at 15% -10%, rgba(124,92,255,.24), transparent 60%),
+        radial-gradient(900px 600px at 85% 0%, rgba(41,211,255,.16), transparent 55%),
+        radial-gradient(900px 600px at 60% 110%, rgba(53,247,165,.12), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+    }
+
+    .skip-link{
+      position:absolute;
+      left:10px;
+      top:-60px;
+      padding:10px 12px;
+      background:rgba(0,0,0,.65);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:10px;
+      z-index:9999;
+      transition: transform .2s ease;
+      color: rgba(255,255,255,.92);
+      text-decoration:none;
+    }
+    .skip-link:focus{ top:10px; outline:none; box-shadow:0 0 0 4px rgba(41,211,255,.25); }
+
+    .wrap{
+      width: min(var(--container), 100% - (var(--pad) * 2));
+      margin: 0 auto;
+      padding: 34px 0 56px;
+    }
+
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      background: linear-gradient(180deg, rgba(7,10,18,.86), rgba(7,10,18,.46));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px var(--pad);
+      gap:18px;
+      max-width: var(--container);
+      margin:0 auto;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:900;
+      letter-spacing:-.02em;
+    }
+    .brand__mark{
+      width:30px; height:30px;
+      border-radius:12px;
+      background:
+        radial-gradient(14px 14px at 30% 30%, rgba(255,255,255,.9), rgba(255,255,255,.15) 55%, transparent 60%),
+        linear-gradient(135deg, rgba(124,92,255,1), rgba(41,211,255,1));
+      box-shadow: 0 14px 40px rgba(124,92,255,.22);
+      position:relative;
+    }
+    .brand__mark:after{
+      content:"";
+      position:absolute; inset:-1px;
+      border-radius:13px;
+      background: linear-gradient(135deg, rgba(124,92,255,.9), rgba(41,211,255,.9), rgba(53,247,165,.8));
+      opacity:.25;
+      filter: blur(10px);
+      z-index:-1;
+    }
+
+    .hero{
+      padding: 38px 0 18px;
+    }
+    .hero h1{
+      margin: 0 0 10px;
+      font-size: clamp(30px, 4vw, 46px);
+      letter-spacing:-.04em;
+      line-height:1.05;
+    }
+    .hero p{
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 70ch;
+      font-size: 15.5px;
+    }
+
+    .card{
+      margin-top: 26px;
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(255,255,255,.12);
+      background:
+        radial-gradient(900px 260px at 20% 10%, rgba(124,92,255,.18), transparent 62%),
+        radial-gradient(700px 240px at 85% 50%, rgba(41,211,255,.14), transparent 60%),
+        rgba(255,255,255,.03);
+      box-shadow: var(--shadow2);
+      overflow:hidden;
+      position:relative;
+    }
+    .card:before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: linear-gradient(90deg, rgba(124,92,255,.0), rgba(41,211,255,.18), rgba(53,247,165,.14), rgba(255,79,216,.0));
+      opacity:.45;
+      filter: blur(14px);
+      pointer-events:none;
+    }
+
+    .card__inner{
+      position:relative;
+      padding: 22px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field{
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      padding: 14px;
+      position:relative;
+      overflow:hidden;
+    }
+    .field:after{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      background: radial-gradient(550px 140px at 0% 0%, rgba(41,211,255,.12), transparent 55%);
+      opacity:.7;
+      pointer-events:none;
+    }
+    .field > *{ position:relative; }
+
+    label{
+      display:block;
+      color: rgba(255,255,255,.86);
+      font-weight: 800;
+      letter-spacing: -.01em;
+      margin-bottom: 8px;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    .input-row{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+    }
+
+    input[type="text"]{
+      width:100%;
+      padding: 14px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: rgba(255,255,255,.94);
+      outline: none;
+      transition: box-shadow .2s ease, border-color .2s ease, transform .12s ease;
+      font-weight: 800;
+      letter-spacing: -.01em;
+    }
+    input[type="text"]::placeholder{
+      color: rgba(255,255,255,.35);
+      font-weight: 700;
+    }
+    input[type="text"]:focus{
+      border-color: rgba(41,211,255,.35);
+      box-shadow: 0 0 0 4px rgba(41,211,255,.18);
+    }
+
+    .unit-chip{
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.84);
+      font-weight: 900;
+      letter-spacing:-.02em;
+      white-space: nowrap;
+    }
+
+    .radios{
+      display:flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+
+    .radio{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      padding: 12px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      cursor:pointer;
+      user-select:none;
+      transition: transform .15s ease, border-color .2s ease, background .2s ease;
+    }
+    .radio:hover{
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,.16);
+      background: rgba(255,255,255,.05);
+    }
+    .radio input{
+      width: 18px;
+      height: 18px;
+      accent-color: var(--b);
+    }
+    .radio span{
+      font-weight: 900;
+      letter-spacing: -.01em;
+    }
+    .radio small{
+      display:block;
+      color: var(--muted);
+      font-weight: 700;
+      margin-top: 1px;
+      letter-spacing: 0;
+      text-transform:none;
+    }
+
+    .actions{
+      display:flex;
+      gap: 12px;
+      align-items:center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.92);
+      background: rgba(255,255,255,.05);
+      font-weight: 900;
+      letter-spacing: -.01em;
+      cursor:pointer;
+      transition: transform .16s ease, border-color .2s ease, box-shadow .2s ease, background .2s ease;
+      min-width: 170px;
+    }
+    .btn:hover{
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,.18);
+      box-shadow: 0 14px 42px rgba(0,0,0,.22);
+      background: rgba(255,255,255,.07);
+    }
+    .btn:focus-visible{
+      outline:none;
+      box-shadow: 0 0 0 4px rgba(41,211,255,.25), 0 14px 42px rgba(0,0,0,.22);
+    }
+
+    .btn--primary{
+      border-color: rgba(41,211,255,.36);
+      background:
+        radial-gradient(120% 120% at 10% 10%, rgba(255,255,255,.14), transparent 40%),
+        linear-gradient(135deg, rgba(124,92,255,.95), rgba(41,211,255,.95));
+      position:relative;
+      overflow:hidden;
+    }
+    .btn--primary:before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+      transform: translateX(-120%);
+      transition: transform .6s ease;
+      opacity:.85;
+    }
+    .btn--primary:hover:before{ transform: translateX(120%); }
+
+    .error{
+      color: rgba(255,255,255,.95);
+      font-weight: 800;
+      background: rgba(255,79,216,.14);
+      border: 1px solid rgba(255,79,216,.28);
+      padding: 10px 12px;
+      border-radius: 14px;
+      display:none;
+      width: 100%;
+    }
+    .error--show{ display:block; }
+
+    .result{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 16px;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+    }
+    .result__left{
+      display:flex;
+      flex-direction:column;
+      gap: 4px;
+    }
+    .result__label{
+      color: var(--muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 12.5px;
+      letter-spacing:.02em;
+    }
+    .result__value{
+      font-size: 30px;
+      font-weight: 950;
+      letter-spacing: -.03em;
+      line-height: 1.05;
+    }
+    .result__hint{
+      color: var(--muted2);
+      font-weight: 700;
+      font-size: 13px;
+      margin-top: 2px;
+      line-height: 1.3;
+    }
+
+    .pill{
+      padding: 12px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(41,211,255,.28);
+      background: rgba(41,211,255,.10);
+      font-weight: 950;
+      letter-spacing: -.02em;
+      color: rgba(255,255,255,.95);
+      white-space:nowrap;
+    }
+
+    .fineprint{
+      margin-top: 10px;
+      color: rgba(255,255,255,.52);
+      font-size: 12.5px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 860px){
+      .grid{ grid-template-columns: 1fr; }
+      .actions{ justify-content:flex-start; }
+      .btn{ min-width: 100%; }
+      .result{ flex-direction:column; align-items:flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#converter">Skip to converter</a>
+
+  <header class="topbar">
+    <div class="nav">
+      <div class="brand" aria-label="Temperature converter">
+        <span class="brand__mark" aria-hidden="true"></span>
+        <span>Temp Converter</span>
+      </div>
+      <div style="color: rgba(255,255,255,.62); font-weight: 800; font-size: 13px;">
+        Fahrenheit ⇄ Celsius
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap" id="main">
+    <section class="hero" aria-labelledby="title">
+      <h1 id="title">Convert temperatures instantly</h1>
+      <p>
+        Enter a temperature value (numbers only), pick the conversion direction, and get the converted result.
+        Input is validated to reject invalid values.
+      </p>
+    </section>
+
+    <section class="card" aria-label="Temperature converter" id="converter">
+      <div class="card__inner">
+        <div class="grid">
+          <div class="field">
+            <label for="tempInput">Temperature value</label>
+            <div class="input-row">
+              <input
+                id="tempInput"
+                name="temp"
+                type="text"
+                inputmode="decimal"
+                autocomplete="off"
+                placeholder="e.g. 98.6 or -40"
+                aria-describedby="inputHelp inputError"
+                pattern="^-?(?:\d+)(?:\.\d+)?$"
+              />
+              <div class="unit-chip" id="fromUnit">F</div>
+            </div>
+            <div id="inputHelp" class="fineprint">
+              Allowed: digits with optional minus and optional decimal (e.g., -12, 98.6).
+            </div>
+            <div id="inputError" class="error" role="alert"></div>
+          </div>
+
+          <div class="field">
+            <label>Convert from → to</label>
+            <div class="radios" role="radiogroup" aria-label="Conversion direction">
+              <label class="radio">
+                <input type="radio" name="dir" value="FtoC" checked />
+                <div>
+                  <span>F → C</span>
+                  <small>Fahrenheit to Celsius</small>
+                </div>
+              </label>
+
+              <label class="radio">
+                <input type="radio" name="dir" value="CtoF" />
+                <div>
+                  <span>C → F</span>
+                  <small>Celsius to Fahrenheit</small>
+                </div>
+              </label>
+            </div>
+
+            <div class="fineprint">
+              Tip: You can press <strong>Enter</strong> to convert.
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn--primary" id="convertBtn" type="button" aria-label="Convert temperature">
+            Convert
+            <span aria-hidden="true">↺</span>
+          </button>
+          <button class="btn" id="swapBtn" type="button" aria-label="Swap conversion direction">
+            Swap
+            <span aria-hidden="true">⇄</span>
+          </button>
+        </div>
+
+        <div class="result" aria-live="polite" aria-atomic="true">
+          <div class="result__left">
+            <div class="result__label">Converted result</div>
+            <div class="result__value" id="resultValue">—</div>
+            <div class="result__hint" id="resultHint">Enter a valid number to see the conversion.</div>
+          </div>
+          <div class="pill" id="toUnit">C</div>
+        </div>
+
+        <div class="fineprint">
+          Formulas used:
+          <strong>F → C</strong>: (F − 32) × 5/9
+          &nbsp;•&nbsp;
+          <strong>C → F</strong>: (C × 9/5) + 32
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const input = document.getElementById('tempInput');
+    const errorEl = document.getElementById('inputError');
+    const resultValue = document.getElementById('resultValue');
+    const resultHint = document.getElementById('resultHint');
+    const fromUnit = document.getElementById('fromUnit');
+    const toUnit = document.getElementById('toUnit');
+    const convertBtn = document.getElementById('convertBtn');
+    const swapBtn = document.getElementById('swapBtn');
+    const dirRadios = Array.from(document.querySelectorAll('input[name="dir"]'));
+
+    const validNumberRegex = /^-?(?:\d+)(?:\.\d+)?$/;
+
+    function getDirection() {
+      const checked = dirRadios.find(r => r.checked);
+      return checked ? checked.value : 'FtoC';
+    }
+
+    function setUnitsByDirection(dir) {
+      if (dir === 'FtoC') {
+        fromUnit.textContent = 'F';
+        toUnit.textContent = 'C';
+      } else {
+        fromUnit.textContent = 'C';
+        toUnit.textContent = 'F';
+      }
+    }
+
+    function formatNumber(n) {
+      if (!Number.isFinite(n)) return '—';
+      const s = n.toFixed(6);
+      return s.replace(/\.?0+$/, '');
+    }
+
+    function setError(message) {
+      errorEl.textContent = message;
+      errorEl.classList.add('error--show');
+    }
+
+    function clearError() {
+      errorEl.textContent = '';
+      errorEl.classList.remove('error--show');
+    }
+
+    function sanitizeOnType(raw) {
+      // Allow only digits, a single leading '-', and a single '.'.
+      let s = String(raw ?? '');
+
+      // Remove all characters except digits, '.' and '-'
+      s = s.replace(/[^0-9.\-]/g, '');
+
+      // Only one leading '-'
+      if (s.includes('-')) {
+        s = (s.startsWith('-') ? '-' : '') + s.replace(/-/g, '');
+      }
+
+      // Only one '.'
+      const firstDot = s.indexOf('.');
+      if (firstDot !== -1) {
+        const before = s.slice(0, firstDot + 1); // includes '.'
+        const after = s.slice(firstDot + 1).replace(/\./g, ''); // remove remaining dots
+        s = before + after;
+      }
+
+      return s;
+    }
+
+    function validateInput() {
+      const raw = input.value.trim();
+      if (!raw) return { ok: false, message: 'Please enter a temperature value.' };
+
+      if (!validNumberRegex.test(raw)) {
+        return { ok: false, message: 'Invalid input. Use only numbers (optional - and optional decimal).' };
+      }
+
+      const num = Number(raw);
+      if (!Number.isFinite(num)) return { ok: false, message: 'That number is not valid.' };
+
+      return { ok: true, value: num };
+    }
+
+    function convert() {
+      clearError();
+
+      const check = validateInput();
+      if (!check.ok) {
+        resultValue.textContent = '—';
+        resultHint.textContent = 'Enter a valid number to see the conversion.';
+        setError(check.message);
+        return;
+      }
+
+      const num = check.value;
+      const dir = getDirection();
+
+      let converted;
+      let toSymbol;
+
+      if (dir === 'FtoC') {
+        // C = (F - 32) * 5/9
+        converted = (num - 32) * (5 / 9);
+        toSymbol = 'C';
+      } else {
+        // F = (C * 9/5) + 32
+        converted = (num * (9 / 5)) + 32;
+        toSymbol = 'F';
+      }
+
+      toUnit.textContent = toSymbol;
+      resultValue.textContent = formatNumber(converted);
+      resultHint.textContent = 'Converted successfully.';
+    }
+
+    function swapDirection() {
+      const dir = getDirection();
+      if (dir === 'FtoC') {
+        dirRadios.find(r => r.value === 'CtoF').checked = true;
+        setUnitsByDirection('CtoF');
+      } else {
+        dirRadios.find(r => r.value === 'FtoC').checked = true;
+        setUnitsByDirection('FtoC');
+      }
+      clearError();
+      resultValue.textContent = '—';
+      resultHint.textContent = 'Enter a valid number to see the conversion.';
+      input.focus();
+    }
+
+    // Live sanitization while typing
+    input.addEventListener('input', () => {
+      const cursor = input.selectionStart ?? input.value.length;
+      const sanitized = sanitizeOnType(input.value);
+
+      if (sanitized !== input.value) {
+        input.value = sanitized;
+        // Best-effort cursor correction
+        input.setSelectionRange(
+          Math.min(cursor, input.value.length),
+          Math.min(cursor, input.value.length)
+        );
+      }
+
+      // If user starts editing after an error, clear it.
+      if (errorEl.classList.contains('error--show')) {
+        clearError();
+      }
+    });
+
+    // Convert on button
+    convertBtn.addEventListener('click', convert);
+
+    // Swap button
+    swapBtn.addEventListener('click', swapDirection);
+
+    // Update unit chips on direction change
+    dirRadios.forEach(r => {
+      r.addEventListener('change', () => {
+        setUnitsByDirection(getDirection());
+        clearError();
+        resultValue.textContent = '—';
+        resultHint.textContent = 'Enter a valid number to see the conversion.';
+      });
+    });
+
+    // Convert on Enter (only when input is focused)
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        convert();
+      }
+    });
+
+    // Init
+    setUnitsByDirection(getDirection());
+  </script>
